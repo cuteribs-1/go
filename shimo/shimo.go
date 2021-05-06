@@ -12,31 +12,41 @@ import (
 )
 
 func main(){
+	fmt.Println("------------------------------")
 	fmt.Println("排骨的石墨 MarkDown 图片下载工具")
+	fmt.Println("------------------------------")
 
 	if len(os.Args) < 3 { 
 		fmt.Println("lack of parameters")
 		return
 	}
 
-	filePath := os.Args[1]
+	mdFilePath := os.Args[1]
 	token := os.Args[2]
-	folder := filepath.Dir(filePath)
 
-	content, _ := ioutil.ReadFile(filePath)
+	folder := strings.TrimRight(mdFilePath, ".md")
+	os.MkdirAll(folder, os.ModePerm)
+	content, _ := ioutil.ReadFile(mdFilePath)
 	md := string(content);
 	md = strings.Replace(md, ")![", ")\n![", -1)
 	re := regexp.MustCompile(`!\[(.*)\]\((https://uploader.shimo.im/.*)\)`)
 	matches := re.FindAllStringSubmatch(md, -1)
 
 	for _, match := range matches {
-		url := match[2]
-		url = url[0:strings.Index(url, "!thumbnail")]
+		originUrl := match[2]
+		url := originUrl[0:strings.Index(originUrl, "!thumbnail")]
 		fileName := url[strings.LastIndex(url, "/") + 1:]
 		url = url + "?accessToken=" + token
 		fmt.Println("pulling ", fileName)
 	  Download(url, filepath.Join(folder, fileName))
+		relativePath := "./" + filepath.Base(folder) + "/" + fileName
+		md = strings.Replace(md, originUrl, relativePath, -1)
 	}
+
+	file, _ := os.OpenFile(mdFilePath, os.O_RDWR, 0755)
+  defer file.Close()
+  file.WriteString(md)
+  file.Sync()
 }
 
 func Download(url string, filePath string) error {
