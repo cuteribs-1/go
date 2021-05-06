@@ -14,6 +14,7 @@ import (
 func main(){
 	fmt.Println("------------------------------")
 	fmt.Println("排骨的石墨 MarkDown 图片下载工具")
+	fmt.Println("shimo.exe [sample.md] [accessToken]")
 	fmt.Println("------------------------------")
 
 	if len(os.Args) < 3 { 
